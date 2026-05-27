@@ -1,0 +1,547 @@
+import { useMemo, useState } from 'react';
+import {
+  Link,
+  NavLink,
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
+import { formatPrice, products } from './data/products.js';
+
+function Header({ cartCount }) {
+  return (
+    <header className="site-header">
+      <Link to="/" className="brand" aria-label="Route Market home">
+        <span className="brand-mark">R</span>
+        <span>Route Market</span>
+      </Link>
+      <nav className="nav-links" aria-label="main navigation">
+        <NavLink to="/">홈</NavLink>
+        <NavLink to="/products">상품</NavLink>
+        <NavLink to="/cart">장바구니</NavLink>
+        <NavLink to="/login">로그인</NavLink>
+        <NavLink to="/report">보고서</NavLink>
+      </nav>
+      <Link to="/cart" className="cart-chip" aria-label={`장바구니 상품 ${cartCount}개`}>
+        {cartCount}
+      </Link>
+    </header>
+  );
+}
+
+function Home({ onAddToCart }) {
+  const featured = products.slice(0, 6);
+
+  const styleItems = [
+    { id: 1, image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80', user: '@style_king' },
+    { id: 2, image: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=600&q=80', user: '@street_queen' },
+    { id: 3, image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=600&q=80', user: '@fashion_lover' },
+    { id: 4, image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=600&q=80', user: '@korean_street' },
+    { id: 5, image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=600&q=80', user: '@daily_look' }
+  ];
+
+  return (
+    <main>
+      <section className="hero">
+        <div className="hero-copy">
+          <p className="eyebrow">Premium Selection</p>
+          <h1>
+            당신의 일상을 <em>특별하게</em>
+            <br />만들어줄 라이프스타일
+          </h1>
+          <p>
+            엄선된 프리미엄 브랜드와 고품질 아이템으로 당신의 공간과 일상을 새롭게 디자인하세요.
+            가치 있는 소비를 제안합니다.
+          </p>
+          <div className="hero-actions">
+            <Link to="/products" className="primary-button">
+              쇼핑 시작하기
+            </Link>
+            <Link to="/report" className="ghost-button">
+              제작 보고서
+            </Link>
+          </div>
+        </div>
+        <div className="hero-product" aria-label="대표 상품">
+          <img src={products[0].image} alt={products[0].name} />
+          <div>
+            <strong>{products[0].name}</strong>
+            <span>{formatPrice(products[0].price)}</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="section-heading">
+          <p className="eyebrow">Featured</p>
+          <h2>인기 상품</h2>
+        </div>
+        <div className="product-grid">
+          {featured.map((product) => (
+            <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
+          ))}
+        </div>
+        <div className="more-button-container">
+          <Link to="/products" className="more-button">더보기</Link>
+        </div>
+      </section>
+
+      <section className="section style-section">
+        <div className="section-heading">
+          <p className="eyebrow">Style Look</p>
+          <h2>고객 스타일 추천</h2>
+        </div>
+        <div className="style-grid">
+          {styleItems.map((item) => (
+            <div key={item.id} className="style-card">
+              <img src={item.image} alt="고객 스타일 추천" />
+              <div className="style-overlay">
+                <span>{item.user}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function ProductsPage({ onAddToCart }) {
+  return (
+    <main className="section page">
+      <div className="section-heading">
+        <p className="eyebrow">Products</p>
+        <h1>전체 상품</h1>
+      </div>
+      <div className="product-grid">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
+        ))}
+      </div>
+    </main>
+  );
+}
+
+function ProductCard({ product, onAddToCart }) {
+  return (
+    <article className="product-card">
+      <Link to={`/products/${product.id}`} className="product-image-link">
+        <img src={product.image} alt={product.name} />
+      </Link>
+      <div className="product-info">
+        <p className="product-brand">{product.badge || 'Select'}</p>
+        <h3 className="product-name">{product.name}</h3>
+        <div className="product-price-row">
+          {product.discount && <span className="product-discount">{product.discount}%</span>}
+          <strong className="product-price">{formatPrice(product.price)}</strong>
+        </div>
+      </div>
+      <div className="product-actions">
+        <Link to={`/products/${product.id}`} className="small-link">
+          상세 보기
+        </Link>
+        <button type="button" onClick={() => onAddToCart(product)}>
+          담기
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function ProductDetail({ onAddToCart }) {
+  const { productId } = useParams();
+  const navigate = useNavigate();
+  const product = products.find((item) => item.id === productId);
+
+  if (!product) {
+    return <Navigate to="/products" replace />;
+  }
+
+  return (
+    <main className="detail-page">
+      <button type="button" className="back-button" onClick={() => navigate(-1)}>
+        뒤로 가기
+      </button>
+      <section className="detail-layout">
+        <img src={product.image} alt={product.name} />
+        <div className="detail-copy">
+          <p className="eyebrow">{product.category}</p>
+          <h1>{product.name}</h1>
+          <strong className="detail-price">{formatPrice(product.price)}</strong>
+          <p>{product.description}</p>
+          <div className="detail-actions">
+            <button type="button" onClick={() => onAddToCart(product)}>
+              장바구니 담기
+            </button>
+            <button type="button" className="secondary-button" onClick={() => navigate('/cart')}>
+              장바구니 이동
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function CartPage({ cartItems, onRemoveFromCart, totalPrice }) {
+  const navigate = useNavigate();
+
+  return (
+    <main className="section page">
+      <div className="section-heading">
+        <p className="eyebrow">Cart</p>
+        <h1>장바구니</h1>
+      </div>
+      {cartItems.length === 0 ? (
+        <div className="empty-state">
+          <h2>아직 담긴 상품이 없습니다</h2>
+          <button type="button" onClick={() => navigate('/products')}>
+            상품 보러 가기
+          </button>
+        </div>
+      ) : (
+        <div className="cart-layout">
+          <div className="cart-list">
+            {cartItems.map((item) => (
+              <article className="cart-item" key={item.cartId}>
+                <img src={item.image} alt={item.name} />
+                <div>
+                  <p>{item.category}</p>
+                  <h3>{item.name}</h3>
+                  <strong>{formatPrice(item.price)}</strong>
+                </div>
+                <button type="button" onClick={() => onRemoveFromCart(item.cartId)}>
+                  삭제
+                </button>
+              </article>
+            ))}
+          </div>
+          <aside className="checkout-panel">
+            <span>총 결제 금액</span>
+            <strong>{formatPrice(totalPrice)}</strong>
+            <button type="button" onClick={() => navigate('/login')}>
+              로그인 후 결제
+            </button>
+          </aside>
+        </div>
+      )}
+    </main>
+  );
+}
+
+function LoginPage() {
+  const [message, setMessage] = useState('');
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    setMessage('로그인에 성공했습니다. 홈으로 이동합니다.');
+    window.setTimeout(() => navigate('/'), 1000);
+  };
+
+  return (
+    <main className="auth-page">
+      <section className="auth-panel">
+        <p className="eyebrow">Login</p>
+        <h1>회원 로그인</h1>
+        <label>
+          아이디
+          <input type="text" placeholder="route-user" />
+        </label>
+        <label>
+          비밀번호
+          <input type="password" placeholder="password" />
+        </label>
+        <div className="auth-actions">
+          <button type="button" onClick={handleLogin}>
+            로그인
+          </button>
+          <button type="button" className="secondary-button" onClick={() => navigate(-1)}>
+            뒤로
+          </button>
+        </div>
+        {message && <p className="success-message">{message}</p>}
+      </section>
+    </main>
+  );
+}
+
+function ReportPage() {
+  const prompts = [
+    {
+      step: '01',
+      text: '간단한 쇼핑몰 제작 — React Router를 이용한 다중 페이지 이동, 제작 보고서 포함, GitHub 저장소에 코드 저장.',
+      result: '프로젝트 초기 구조 점검 후 React Router 기반 쇼핑몰 화면과 보고서 페이지를 구성.',
+    },
+    {
+      step: '02',
+      text: '왜 npm run dev를 해도 화면에 아무것도 안 보여?',
+      result: 'vite.config.js 부재가 원인임을 진단. @vitejs/plugin-react를 등록한 설정 파일을 생성하여 JSX 변환 문제 해결.',
+    },
+    {
+      step: '03',
+      text: '보고서 페이지에 보고서 작성해야 해.',
+      result: 'ReportPage를 10개 섹션(개요·환경·라우팅·라우트표·기능·API·디자인·상태관리·한계·회고)으로 구성. 라우트 구성표 컴포넌트와 인라인 code 스타일 추가.',
+    },
+    {
+      step: '04',
+      text: '프롬프트도 포함했으면 좋겠는데.',
+      result: '본 섹션을 추가하여 개발 과정에서 사용한 프롬프트와 그에 따른 작업 결과를 타임라인 형태로 문서화.',
+    },
+    {
+      step: '05',
+      text: '특정 서비스명을 배제해줘.',
+      result: '특정 서비스명으로 보이는 문구를 제거하고 일반 쇼핑몰 표현으로 수정.',
+    },
+  ];
+
+  const routes = [
+    { path: '/', name: '홈', desc: '히어로 영역 + 추천 상품 6종 노출' },
+    { path: '/products', name: '상품 목록', desc: '전체 상품 카드 그리드' },
+    { path: '/products/:productId', name: '상품 상세', desc: '동적 URL 파라미터로 상품 식별' },
+    { path: '/cart', name: '장바구니', desc: '담은 상품 리스트, 총 금액, 결제 이동' },
+    { path: '/login', name: '로그인', desc: '로그인 후 useNavigate로 홈 이동' },
+    { path: '/report', name: '보고서', desc: '본 제작 보고서 페이지' },
+    { path: '*', name: '404', desc: 'NotFound 처리 라우트' },
+  ];
+
+  return (
+    <main className="section page report-page">
+      <div className="section-heading">
+        <p className="eyebrow">Report</p>
+        <h1>제작 보고서</h1>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '0.75rem' }}>
+          React Router를 활용한 다중 페이지 쇼핑몰 — 설계부터 구현까지
+        </p>
+      </div>
+
+      <div className="report-grid">
+        <section>
+          <h2>1. 프로젝트 개요</h2>
+          <p>
+            React와 React Router v6를 활용하여 SPA(Single Page Application) 방식의
+            쇼핑몰을 제작했습니다. 새로고침 없이 URL을 통한 페이지 전환이
+            이루어지며, 홈·상품 목록·상품 상세·장바구니·로그인·보고서 총 6개의
+            화면으로 구성됩니다.
+          </p>
+        </section>
+
+        <section>
+          <h2>2. 개발 환경</h2>
+          <p>
+            <strong>Build Tool</strong> · Vite 6<br />
+            <strong>Framework</strong> · React 18<br />
+            <strong>Routing</strong> · react-router-dom 6<br />
+            <strong>Styling</strong> · 순수 CSS (CSS Variables 기반 디자인 토큰)<br />
+            <strong>Language</strong> · JavaScript (JSX)
+          </p>
+        </section>
+
+        <section>
+          <h2>3. 적용한 라우팅 기법</h2>
+          <p>
+            진입점인 <code>main.jsx</code>에서 <code>BrowserRouter</code>로 앱을
+            감싸고, <code>App.jsx</code>에서 <code>Routes</code> /{' '}
+            <code>Route</code>로 경로를 선언했습니다. 네비게이션은{' '}
+            <code>Link</code>와 활성 상태 표시가 가능한 <code>NavLink</code>를
+            사용했고, 상세 페이지는 <code>:productId</code> 동적 세그먼트를{' '}
+            <code>useParams</code>로 받아 처리합니다.
+          </p>
+        </section>
+      </div>
+
+      <section style={{ marginTop: '3rem' }}>
+        <h2 style={{ marginBottom: '1.5rem' }}>4. 라우트 구성표</h2>
+        <div className="route-table">
+          <div className="route-row route-head">
+            <span>경로</span>
+            <span>페이지</span>
+            <span>설명</span>
+          </div>
+          {routes.map((r) => (
+            <div className="route-row" key={r.path}>
+              <span><code>{r.path}</code></span>
+              <span>{r.name}</span>
+              <span>{r.desc}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="report-grid" style={{ marginTop: '3rem' }}>
+        <section>
+          <h2>5. 주요 기능</h2>
+          <p>
+            • 상품 카드 그리드와 hover 인터랙션<br />
+            • 동적 URL 기반 상품 상세 페이지<br />
+            • 장바구니 담기 / 개별 삭제<br />
+            • <code>useMemo</code>로 총 결제 금액 자동 계산<br />
+            • 로그인 성공 시 <code>useNavigate</code>로 홈 이동<br />
+            • 잘못된 상품 ID 접근 시 <code>Navigate</code>로 목록 페이지 리다이렉트<br />
+            • <code>*</code> 와일드카드 경로로 404 처리
+          </p>
+        </section>
+
+        <section>
+          <h2>6. 사용한 React Router API</h2>
+          <p>
+            <code>BrowserRouter</code>, <code>Routes</code>, <code>Route</code>,{' '}
+            <code>Link</code>, <code>NavLink</code>, <code>Navigate</code>,{' '}
+            <code>useNavigate</code>, <code>useParams</code> 등 React Router v6의
+            핵심 API를 실습 차원에서 두루 사용했습니다.
+          </p>
+        </section>
+
+        <section>
+          <h2>7. 디자인 컨셉</h2>
+          <p>
+            Inter 폰트 기반의 미니멀한 타이포그래피, 회색 톤의 중성 팔레트,
+            CSS Variables로 정의한 디자인 토큰을 사용했습니다. 카드 hover 시
+            lift 애니메이션, 이미지 zoom, 페이지 전환 fade-in 효과로 디테일을
+            살렸으며, 모바일까지 대응하는 반응형 레이아웃을 적용했습니다.
+          </p>
+        </section>
+
+        <section>
+          <h2>8. 상태 관리</h2>
+          <p>
+            장바구니는 <code>App</code> 컴포넌트의 <code>useState</code>로 관리하고,
+            하위 페이지에는 props로 핸들러를 전달하는 단방향 데이터 흐름을
+            유지했습니다. 규모가 작아 Context나 외부 상태 관리 라이브러리는
+            도입하지 않았습니다.
+          </p>
+        </section>
+
+        <section>
+          <h2>9. 한계 및 개선 방향</h2>
+          <p>
+            현재는 새로고침 시 장바구니가 초기화됩니다. 추후 <code>localStorage</code>
+            연동, 동일 상품 수량 합산, 로그인 인증 가드(Protected Route),
+            서버 연동을 통한 실제 결제 흐름까지 확장할 수 있습니다.
+          </p>
+        </section>
+
+        <section>
+          <h2>10. 회고</h2>
+          <p>
+            React Router의 선언적 라우팅 덕분에 페이지 구조를 명확히 파악할 수
+            있었고, <code>useNavigate</code>·<code>useParams</code> 같은 훅을
+            직접 사용해보며 SPA에서의 페이지 이동 메커니즘을 익혔습니다.
+            컴포넌트 분리와 props 설계의 중요성도 체감할 수 있었던 과제였습니다.
+          </p>
+        </section>
+      </div>
+
+      <section style={{ marginTop: '3rem' }}>
+        <h2 style={{ marginBottom: '1.5rem' }}>11. 사용한 프롬프트</h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+          본 프로젝트는 AI 어시스턴트와의 대화를 통해 진행되었으며, 단계별로
+          사용한 프롬프트와 그에 따른 작업 결과는 아래와 같습니다.
+        </p>
+        <div className="prompt-timeline">
+          {prompts.map((p) => (
+            <article className="prompt-item" key={p.step}>
+              <div className="prompt-step">{p.step}</div>
+              <div className="prompt-body">
+                <p className="prompt-text">“{p.text}”</p>
+                <p className="prompt-result">
+                  <strong>→ 작업 결과 ·</strong> {p.result}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function NotFoundPage() {
+  return (
+    <main className="empty-state page">
+      <h1>페이지를 찾을 수 없습니다</h1>
+      <Link to="/products" className="primary-button">
+        상품 페이지로 이동
+      </Link>
+    </main>
+  );
+}
+
+export default function App() {
+  const navigate = useNavigate();
+  const [cartItems, setCartItems] = useState([]);
+  const [toast, setToast] = useState(null);
+  const [toastTimeoutId, setToastTimeoutId] = useState(null);
+
+  const cartCount = cartItems.length;
+  const totalPrice = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.price, 0),
+    [cartItems],
+  );
+
+  const handleAddToCart = (product) => {
+    setCartItems((items) => [...items, { ...product, cartId: crypto.randomUUID() }]);
+    
+    if (toastTimeoutId) {
+      clearTimeout(toastTimeoutId);
+    }
+    
+    setToast({
+      name: product.name,
+      image: product.image
+    });
+
+    const timeout = setTimeout(() => {
+      setToast(null);
+    }, 3000);
+    setToastTimeoutId(timeout);
+  };
+
+  const handleRemoveFromCart = (cartId) => {
+    setCartItems((items) => items.filter((item) => item.cartId !== cartId));
+  };
+
+  return (
+    <>
+      <Header cartCount={cartCount} />
+      <Routes>
+        <Route path="/" element={<Home onAddToCart={handleAddToCart} />} />
+        <Route path="/products" element={<ProductsPage onAddToCart={handleAddToCart} />} />
+        <Route
+          path="/products/:productId"
+          element={<ProductDetail onAddToCart={handleAddToCart} />}
+        />
+        <Route
+          path="/cart"
+          element={
+            <CartPage
+              cartItems={cartItems}
+              onRemoveFromCart={handleRemoveFromCart}
+              totalPrice={totalPrice}
+            />
+          }
+        />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/report" element={<ReportPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+
+      {toast && (
+        <div className="toast-notification" role="alert">
+          <img src={toast.image} alt={toast.name} className="toast-img" />
+          <div className="toast-body">
+            <p className="toast-title">장바구니 추가 완료</p>
+            <p className="toast-desc">{toast.name}</p>
+          </div>
+          <div className="toast-actions">
+            <button className="toast-btn-go" onClick={() => { navigate('/cart'); setToast(null); }}>
+              이동
+            </button>
+            <button className="toast-btn-close" onClick={() => setToast(null)}>×</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
