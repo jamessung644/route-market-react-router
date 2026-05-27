@@ -344,6 +344,9 @@ function ReportPage() {
         <p style={{ color: 'var(--text-secondary)', marginTop: '0.75rem' }}>
           React Router를 활용한 다중 페이지 쇼핑몰 — 설계부터 구현까지
         </p>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '0.75rem' }}>
+          202310671 AI융합학과 성수한
+        </p>
       </div>
 
       <div className="report-grid">
