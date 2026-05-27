@@ -402,6 +402,7 @@ function ReportPage() {
         </div>
       </section>
 
+
       <div className="report-grid" style={{ marginTop: '3rem' }}>
         <section>
           <h2>5. 주요 기능</h2>
