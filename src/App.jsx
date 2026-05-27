@@ -447,21 +447,13 @@ function ReportPage() {
         </section>
 
         <section>
-          <h2>9. 한계 및 개선 방향</h2>
-          <p>
-            현재는 새로고침 시 장바구니가 초기화됩니다. 추후 <code>localStorage</code>
-            연동, 동일 상품 수량 합산, 로그인 인증 가드(Protected Route),
-            서버 연동을 통한 실제 결제 흐름까지 확장할 수 있습니다.
-          </p>
-        </section>
-
-        <section>
-          <h2>10. 회고</h2>
+          <h2>9. 소감</h2>
           <p>
             React Router의 선언적 라우팅 덕분에 페이지 구조를 명확히 파악할 수
             있었고, <code>useNavigate</code>·<code>useParams</code> 같은 훅을
             직접 사용해보며 SPA에서의 페이지 이동 메커니즘을 익혔습니다.
             컴포넌트 분리와 props 설계의 중요성도 체감할 수 있었던 과제였습니다.
+            Github 레포지터리에 프로젝트를 업로드 한뒤, Vercel 에 웹 호스팅을 하여, 전 세계 누구나 접속가능한 링크를 만들 수 있다는 점이 가장 좋았습니다.
           </p>
         </section>
       </div>
